@@ -1,1 +1,10 @@
 C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\bin\Debug\Circuit Simulator.exe.config
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\bin\Debug\Circuit Simulator.exe
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\bin\Debug\Circuit Simulator.pdb
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit Simulator.csprojResolveAssemblyReference.cache
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit_Simulator.Popup.resources
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit_Simulator.Window.resources
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit_Simulator.Properties.Resources.resources
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit Simulator.csproj.GenerateResource.Cache
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit Simulator.exe
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Debug\Circuit Simulator.pdb

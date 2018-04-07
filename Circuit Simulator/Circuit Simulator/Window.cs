@@ -32,8 +32,6 @@ namespace Circuit_Simulator
         List<byte> clickState;
         CablePoint pointClicked;
 
-        List<Gate> clipboard = new List<Gate>();
-
         float offsetX, offsetY, scale = GridSize;
         bool saved;
         string filePath;
@@ -64,7 +62,7 @@ namespace Circuit_Simulator
         bool AnyCopied
         {
             get {
-                return clipboard.Count > 0;
+                return Clipboard.ContainsData(DataFormat);
             }
         }
         bool ButtonSelected
@@ -105,6 +103,10 @@ namespace Circuit_Simulator
         #region IO
         List<byte> GenerateState()
         {
+            return GenerateState(gates);
+        }
+        List<byte> GenerateState(List<Gate> gates)
+        {
             List<Connection> connectionList = new List<Connection>();
             List<CablePoint> pointList = Points.ToList();
 
@@ -112,6 +114,7 @@ namespace Circuit_Simulator
                 foreach (var conn in gate.Connections)
                     if (!conn.empty)
                         connectionList.Add(conn);
+
             List<byte> stream = new List<byte>();
 
             stream.AddByte(Version);
@@ -175,7 +178,7 @@ namespace Circuit_Simulator
             return stream;
         }
 
-        bool LoadState(List<byte> bytes)
+        List<Gate> LoadState(List<byte> bytes, bool overwrite = true)
         {
             try
             {
@@ -251,7 +254,7 @@ namespace Circuit_Simulator
                             gate.input.Add(connection);
                             gate.amtInputs++;
                             if (!connection.empty)
-                                connection.Point = pointList[bytes.ReadInt(ref i)];
+                                connection.Point = pointList.ElementAtOrDefault(bytes.ReadInt(ref i));
                         }
                         if (!connection.empty)
                         {
@@ -269,17 +272,24 @@ namespace Circuit_Simulator
 
                 int relativeIndex = 0;
                 foreach (Gate gate in gates)
-                    foreach (var conns in gate.Connections)
-                        if (!conns.empty)
-                            for (int x = 0; x < conns.OtherConnections.Count; x++)
-                                conns.OtherConnections[x] = connectionList[refList[relativeIndex++]];
+                    foreach (var conn in gate.Connections)
+                        if (!conn.empty)
+                            for (int x = 0; x < conn.OtherConnections.Count; x++)
+                            {
+                                var c = connectionList.ElementAtOrDefault(refList.ElementAtOrDefault(relativeIndex++));
+                                if (c == null)
+                                    conn.empty = true;
+                                else
+                                    conn.OtherConnections[x] = c;
+                            }
 
-                ClearGates();
+                if (overwrite)
+                    ClearGates();
                 foreach (Gate gate in gates)
                     AddGate(gate);
                 foreach (Gate gate in selected)
                     Select(gate);
-                return true;
+                return gates;
             }
             catch (Exception ex)
             {
@@ -289,13 +299,14 @@ namespace Circuit_Simulator
                     "File Parsing Failed",
                     MessageBoxButtons.OK, MessageBoxIcon.Error
                 );
-                return false;
+                return null;
             }
         }
         Gate ImportState(List<byte> bytes)
         {
             int i = 1;
-            i += 8 * bytes.ReadInt(ref i) + 1;
+            int skipOverPoints = bytes.ReadInt(ref i);
+            i += 2 * 4 * skipOverPoints;
 
             int amtInputs = bytes.ReadInt(ref i);
             int amtOutputs = bytes.ReadInt(ref i);
@@ -304,6 +315,8 @@ namespace Circuit_Simulator
             Gate gate = new Gate(0, 0, Gate.Type.Custom);
 
             gate.amtInputs = amtInputs;
+            gate.minInputs = amtInputs;
+            gate.maxInputs = amtInputs;
             gate.amtOutputs = amtOutputs;
 
             gate.nameList = new string[amtInputs + amtOutputs];
@@ -317,6 +330,8 @@ namespace Circuit_Simulator
             {
                 gate.truthTable[j] = bytes.ReadBool(ref i);
             }
+            gate.ChangeTo(Gate.Type.Custom, gate);
+
             return gate;
         }
 
@@ -395,7 +410,7 @@ namespace Circuit_Simulator
         }
         bool OpenFile(string filePath)
         {
-            if (LoadState(Read(filePath)))
+            if (LoadState(Read(filePath)) != null)
             {
                 this.filePath = filePath;
                 saved = true;
@@ -601,10 +616,8 @@ namespace Circuit_Simulator
         }
         void ClearGates()
         {
-            ClearClipboard();
             ClearConnection();
             ClearSelection();
-            clipboard.Clear();
             gates.Clear();
         }
         void ResetView()
@@ -724,28 +737,24 @@ namespace Circuit_Simulator
             }
             ClearSelection();
         }
-        void ClearClipboard()
-        {
-            clipboard.Clear();
-            UpdateButtonVisibility();
-        }
         void AddSelectedToClipboard()
         {
-            foreach (var gate in selected)
-                clipboard.Add(gate.Copy());
+            Clipboard.SetData(DataFormat, GenerateState(selected));
             UpdateButtonVisibility();
         }
         void PasteFromClipboard()
         {
-            var bounds = BoundsOf(clipboard);
-            ClearSelection();
-            foreach (var gate in clipboard)
+            if (AnyCopied)
             {
-                var newGate = gate.Copy();
-                newGate.Move(lastPos.X - bounds.X, lastPos.Y - bounds.Y);
-                newGate.SnapToGrid();
-                Select(newGate);
-                AddGate(newGate);
+                ClearSelection();
+                var gates = LoadState((List<byte>) Clipboard.GetData(DataFormat), false);
+                RectangleF bounds = BoundsOf(gates);
+                foreach (var gate in gates)
+                {
+                    gate.Move(lastPos.X - bounds.X, lastPos.Y - bounds.Y);
+                    gate.SnapToGrid();
+                    Select(gate);
+                }
             }
         }
 
@@ -909,7 +918,6 @@ namespace Circuit_Simulator
             {
                 if (ModifierKeys != Keys.Control && (clicked == null || !clicked.isSelected))
                 {
-                    if (AnySelected) TakeSnapshot("Selected Cleared 1 (MouseDown)");
                     ClearSelection();
                 }
                 if (ModifierKeys == Keys.Shift)
@@ -920,19 +928,16 @@ namespace Circuit_Simulator
                 {
                     if (!clicked.isSelected)
                     {
-                        TakeSnapshot("Gate Selected (MouseDown)");
                         Select(clicked);
                     }
                     else if (ModifierKeys == Keys.Control)
                     {
-                        TakeSnapshot("Gate Unselected (MouseDown)");
                         clicked.isSelected = false;
                         selected.Remove(clicked);
                     }
                 }
                 else if (pointClicked != null)
                 {
-                    if (AnySelected) TakeSnapshot("Selection cleared (MouseDown)");
                     this.pointClicked = pointClicked;
                     ClearSelection();
                 }
@@ -953,7 +958,6 @@ namespace Circuit_Simulator
                     else if (clickedConnection == connection)
                     {
                         clickedConnection = null;
-                        TakeSnapshot("Clicked Connection swapped");
                     }
                     else
                     {
@@ -1015,8 +1019,6 @@ namespace Circuit_Simulator
             {
                 selecting = false;
                 var gates = GatesIn(lastClick.X, lastClick.Y, lastPos.X, lastPos.Y);
-                if (gates.Count > 0)
-                    TakeSnapshot("Gates Selected (MouseUp)");
                 foreach (var gate in gates)
                     Select(gate);
             }
@@ -1071,7 +1073,7 @@ namespace Circuit_Simulator
             {
                 MsgBox(
                     ex.GetType().Name + "\r\n" + ex.StackTrace,
-                    "Error",
+                    "Error :(",
                     MessageBoxButtons.OK, MessageBoxIcon.Error
                 );
                 Environment.Exit(0);
@@ -1138,7 +1140,6 @@ namespace Circuit_Simulator
         {
             if (AnySelected)
             {
-                ClearClipboard();
                 AddSelectedToClipboard();
             }
         }
@@ -1184,11 +1185,6 @@ namespace Circuit_Simulator
             Zoom(false, true);
         }
 
-        void menuStrip_Tools_Clear_Click(object sender, EventArgs e)
-        {
-            if (gates.Count > 0) TakeSnapshot("Gates Cleared");
-            gates.Clear();
-        }
         void menuStrip_Tools_Reload_Click(object sender, EventArgs e)
         {
             LoadState(GenerateState());
@@ -1272,10 +1268,7 @@ namespace Circuit_Simulator
                     {
                         var point = gate.output[0].OtherConnection.Point;
                         if (point != conn.Point)
-                        {
-                            conn.Point.x = point.x;
-                            conn.Point.y = point.y;
-                        }
+                            conn.Point = point;
                     }
         }
         #endregion

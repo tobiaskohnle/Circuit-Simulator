@@ -77,15 +77,10 @@ namespace Circuit_Simulator
                 Clear();
             connection.empty = empty = false;
             if (isOutput)
-            {
-                OtherConnections.Add(connection);
-                connection.OtherConnection = this;
-            }
-            else
-            {
-                connection.OtherConnections.Add(this);
-                OtherConnection = connection;
-            }
+                throw new Exception();
+            connection.OtherConnections.Clear();
+            connection.OtherConnections.Add(this);
+            OtherConnection = connection;
         }
         public void Clear()
         {
@@ -98,7 +93,7 @@ namespace Circuit_Simulator
             {
                 point = null;
                 OtherConnection.OtherConnections.Remove(this);
-                OtherConnection.empty = OtherConnection.self.output.Count == 0;
+                OtherConnection.empty = OtherConnection.OtherConnections.Count == 0;
             }
             empty = true;
         }
@@ -157,6 +152,7 @@ namespace Circuit_Simulator
         {
             var gate = new Gate(x, y, type, this);
             gate.w = w; gate.h = h;
+            gate.name = name;
             gate.input = new List<Connection>();
             gate.output = new List<Connection>();
             foreach (var conn in Connections)
@@ -164,7 +160,11 @@ namespace Circuit_Simulator
                     .Add(new Connection(gate, conn.index, conn.inverted, conn.isOutput));
             gate.amtInputs = amtInputs;
             gate.amtOutputs = amtOutputs;
+            gate.minInputs = minInputs;
+            gate.maxInputs = maxInputs;
             gate.togglestate = togglestate;
+            gate.truthTable = truthTable?.ToArray();
+            gate.nameList = nameList?.ToArray();
             return gate;
         }
 
@@ -202,7 +202,6 @@ namespace Circuit_Simulator
             if (b.self.Find(a.self)) return false;
             return true;
         }
-
         public static void AddConnection(Connection incoming, Connection outgoing)
         {
             incoming.Clear();
@@ -281,7 +280,6 @@ namespace Circuit_Simulator
             pen.StartCap = pen.EndCap = LineCap.Square;
 
             graphics.FillRectangle(new SolidBrush(Theme.LightBackColor), x, y, w, h);
-            graphics.DrawRectangle(new Pen(Theme.MainColor, 2 * Window.PenWidth), x, y, w, h);
 
             switch (type)
             {
@@ -414,6 +412,7 @@ namespace Circuit_Simulator
                 type == Type.Switch || type == Type.Light ? y + h / 2f : y - 0.5f,
                 format1
             );
+            graphics.DrawRectangle(new Pen(Theme.MainColor, 2 * Window.PenWidth), x, y, w, h);
         }
 
         public bool IncludesPos(float x0, float y0)
@@ -428,23 +427,20 @@ namespace Circuit_Simulator
 
         public void TrimConnections(List<Connection> connections, int min, int max, bool isOut)
         {
-            int i = 0;
-            int removed = 0;
-            foreach (var conn in connections.ToArray())
-                if (conn.empty && !conn.inverted || (isOut ? amtOutputs : amtInputs) > max && max != -1)
-                {
-                    if (!conn.empty) conn.Clear();
-                    connections.Remove(conn);
-                    if (isOut) amtOutputs--; else amtInputs--; removed++;
-                }
-                else
-                {
-                    conn.index -= removed; i++;
-                }
-            while ((isOut ? amtOutputs : amtInputs) < min)
+            connections.RemoveAll(conn => conn.empty && !conn.inverted);
+            for (int i = 0; i < connections.Count; i++)
+                connections[i].index = i;
+            while (connections.Count > max && max != -1)
             {
-                if (isOut) AddEmptyOutput(); else AddEmptyInput();
+                connections.Last().Clear();
+                connections.RemoveAt(connections.Count - 1);
             }
+            while (connections.Count < min)
+                connections.Add(new Connection(this, connections.Count, false, isOut));
+            if (isOut)
+                amtOutputs = connections.Count;
+            else
+                amtInputs = connections.Count;
         }
         public void TrimAllConnections()
         {
@@ -519,6 +515,8 @@ namespace Circuit_Simulator
                 TrimConnections(input, custom.amtInputs, custom.amtInputs, false);
                 TrimConnections(output, custom.amtOutputs, custom.amtOutputs, true);
                 w = 5; h = 6;
+                minInputs = amtInputs;
+                maxInputs = amtInputs;
                 truthTable = custom.truthTable;
                 nameList = custom.nameList;
                 break;
@@ -562,7 +560,6 @@ namespace Circuit_Simulator
             float dy = (float) Math.Round(y) - y;
             x += dx; y += dy;
             foreach (var conn in Connections)
-            {
                 if (conn.Point != null)
                 {
                     conn.Point.Move(dx, dy);
@@ -573,7 +570,6 @@ namespace Circuit_Simulator
                     //conn.connection.point.Move(dx, dy);
                     conn.OtherConnection.Point.SnapToGrid();
                 }
-            }
         }
 
         public bool Level(int index)

@@ -50,7 +50,6 @@
             this.menuStrip_View_ZoomOut = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Reload = new System.Windows.Forms.ToolStripMenuItem();
-            this.menuStrip_Tools_Clear = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Rename = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Resize = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_AddInput = new System.Windows.Forms.ToolStripMenuItem();
@@ -62,6 +61,9 @@
             this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.contextMenu_Add = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_Type = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenu_Delete = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenu_Copy = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenu_Paste = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_Rename = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_Resize = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_AddInput = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,9 +72,6 @@
             this.contextMenu_Merge = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_Invert = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_Toggle = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenu_Delete = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenu_Copy = new System.Windows.Forms.ToolStripMenuItem();
-            this.contextMenu_Paste = new System.Windows.Forms.ToolStripMenuItem();
             this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.TopToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.RightToolStripPanel = new System.Windows.Forms.ToolStripPanel();
@@ -301,7 +300,6 @@
             // 
             this.menuStrip_Tools.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuStrip_Tools_Reload,
-            this.menuStrip_Tools_Clear,
             this.menuStrip_Tools_Rename,
             this.menuStrip_Tools_Resize,
             this.menuStrip_Tools_AddInput,
@@ -320,14 +318,6 @@
             this.menuStrip_Tools_Reload.Size = new System.Drawing.Size(206, 22);
             this.menuStrip_Tools_Reload.Text = "Reload";
             this.menuStrip_Tools_Reload.Click += new System.EventHandler(this.menuStrip_Tools_Reload_Click);
-            // 
-            // menuStrip_Tools_Clear
-            // 
-            this.menuStrip_Tools_Clear.Image = global::Circuit_Simulator.Properties.Resources.delete;
-            this.menuStrip_Tools_Clear.Name = "menuStrip_Tools_Clear";
-            this.menuStrip_Tools_Clear.Size = new System.Drawing.Size(206, 22);
-            this.menuStrip_Tools_Clear.Text = "Clear All Gates";
-            this.menuStrip_Tools_Clear.Click += new System.EventHandler(this.menuStrip_Tools_Clear_Click);
             // 
             // menuStrip_Tools_Rename
             // 
@@ -433,6 +423,30 @@
             this.contextMenu_Type.Size = new System.Drawing.Size(182, 22);
             this.contextMenu_Type.Text = "Change Type";
             // 
+            // contextMenu_Delete
+            // 
+            this.contextMenu_Delete.Image = global::Circuit_Simulator.Properties.Resources.delete;
+            this.contextMenu_Delete.Name = "contextMenu_Delete";
+            this.contextMenu_Delete.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Delete.Text = "Delete";
+            this.contextMenu_Delete.Click += new System.EventHandler(this.menuStrip_Edit_Delete_Click);
+            // 
+            // contextMenu_Copy
+            // 
+            this.contextMenu_Copy.Image = global::Circuit_Simulator.Properties.Resources.copy;
+            this.contextMenu_Copy.Name = "contextMenu_Copy";
+            this.contextMenu_Copy.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Copy.Text = "Copy";
+            this.contextMenu_Copy.Click += new System.EventHandler(this.menuStrip_Edit_Copy_Click);
+            // 
+            // contextMenu_Paste
+            // 
+            this.contextMenu_Paste.Image = global::Circuit_Simulator.Properties.Resources.paste;
+            this.contextMenu_Paste.Name = "contextMenu_Paste";
+            this.contextMenu_Paste.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Paste.Text = "Paste";
+            this.contextMenu_Paste.Click += new System.EventHandler(this.menuStrip_Edit_Paste_Click);
+            // 
             // contextMenu_Rename
             // 
             this.contextMenu_Rename.Image = global::Circuit_Simulator.Properties.Resources.rename;
@@ -496,30 +510,6 @@
             this.contextMenu_Toggle.Size = new System.Drawing.Size(182, 22);
             this.contextMenu_Toggle.Text = "Toggle Buttons";
             this.contextMenu_Toggle.Click += new System.EventHandler(this.menuStrip_Tools_Toggle_Click);
-            // 
-            // contextMenu_Delete
-            // 
-            this.contextMenu_Delete.Image = global::Circuit_Simulator.Properties.Resources.delete;
-            this.contextMenu_Delete.Name = "contextMenu_Delete";
-            this.contextMenu_Delete.Size = new System.Drawing.Size(182, 22);
-            this.contextMenu_Delete.Text = "Delete";
-            this.contextMenu_Delete.Click += new System.EventHandler(this.menuStrip_Edit_Delete_Click);
-            // 
-            // contextMenu_Copy
-            // 
-            this.contextMenu_Copy.Image = global::Circuit_Simulator.Properties.Resources.copy;
-            this.contextMenu_Copy.Name = "contextMenu_Copy";
-            this.contextMenu_Copy.Size = new System.Drawing.Size(182, 22);
-            this.contextMenu_Copy.Text = "Copy";
-            this.contextMenu_Copy.Click += new System.EventHandler(this.menuStrip_Edit_Copy_Click);
-            // 
-            // contextMenu_Paste
-            // 
-            this.contextMenu_Paste.Image = global::Circuit_Simulator.Properties.Resources.paste;
-            this.contextMenu_Paste.Name = "contextMenu_Paste";
-            this.contextMenu_Paste.Size = new System.Drawing.Size(182, 22);
-            this.contextMenu_Paste.Text = "Paste";
-            this.contextMenu_Paste.Click += new System.EventHandler(this.menuStrip_Edit_Paste_Click);
             // 
             // BottomToolStripPanel
             // 
@@ -842,7 +832,6 @@
         private System.Windows.Forms.ToolStripMenuItem contextMenu_Copy;
         private System.Windows.Forms.ToolStripMenuItem contextMenu_Paste;
         private System.Windows.Forms.ToolStripMenuItem contextMenu_Delete;
-        private System.Windows.Forms.ToolStripMenuItem menuStrip_Tools_Clear;
         private System.Windows.Forms.ToolStripMenuItem contextMenu_AddInput;
         private System.Windows.Forms.ToolStripMenuItem contextMenu_Invert;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
