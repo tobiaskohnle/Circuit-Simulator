@@ -358,21 +358,19 @@ namespace Circuit_Simulator
                 float ww = 3, vv = 0.5f, vw = 2;
                 for (int i = 0; i < 7; i++)
                 {
-                    GraphicsPath segmentPath = new GraphicsPath();
+                    GraphicsPath path = new GraphicsPath();
                     float x = (6 >> i & 1) * ww + vv, y = (5796 >> 2 * i & 3) * ww + vv;
                     int dx = 73 >> i & 1, dy = dx - 1;
-                    segmentPath.AddLine(x, y, x += vv, y -= vv);
-                    segmentPath.AddLine(x, y, x += dx * vw, y += dy * vw);
+                    path.AddLine(x, y, x += vv, y -= vv);
+                    path.AddLine(x, y, x += dx * vw, y += dy * vw);
                     int d = 2 * dx - 1;
-                    segmentPath.AddLine(x, y, x += d * vv, y += d * vv);
-                    segmentPath.AddLine(x, y, x -= vv, y += vv);
-                    segmentPath.AddLine(x, y, x -= dx * vw, y -= dy * vw);
-                    segmentPath.Transform(new Matrix(1f, 0, 0, 1f, this.x + 0.5f, this.y + 0.5f));
-                    segmentPath.CloseFigure();
-                    graphics.FillPath(new SolidBrush(
-                        input[i].Level ? Theme.Glow : Theme.SelectionLight
-                    ), segmentPath);
-                    graphics.DrawPath(new Pen(Theme.BackColor, 2 * Window.PenWidth), segmentPath);
+                    path.AddLine(x, y, x += d * vv, y += d * vv);
+                    path.AddLine(x, y, x -= vv, y += vv);
+                    path.AddLine(x, y, x -= dx * vw, y -= dy * vw);
+                    path.Transform(new Matrix(1, 0, 0, 1, this.x + (w - 4) / 2f, this.y + (h - 7) / 2f));
+                    path.CloseFigure();
+                    graphics.FillPath(new SolidBrush(input[i].Level ? Theme.Glow : Theme.SelectionLight), path);
+                    graphics.DrawPath(new Pen(Theme.BackColor, 2 * Window.PenWidth), path);
                 }
                 break;
             case Type.RedGreenLight:
@@ -511,12 +509,13 @@ namespace Circuit_Simulator
             case Type.Clock:
                 Set(2, 2, 0, 0, 1, false); break;
             case Type.Custom:
-                if (custom == null) break;
-                TrimConnections(input, custom.amtInputs, custom.amtInputs, false);
-                TrimConnections(output, custom.amtOutputs, custom.amtOutputs, true);
                 w = 5; h = 6;
                 minInputs = amtInputs;
                 maxInputs = amtInputs;
+                if (custom == null)
+                    break;
+                TrimConnections(input, custom.amtInputs, custom.amtInputs, false);
+                TrimConnections(output, custom.amtOutputs, custom.amtOutputs, true);
                 truthTable = custom.truthTable;
                 nameList = custom.nameList;
                 break;

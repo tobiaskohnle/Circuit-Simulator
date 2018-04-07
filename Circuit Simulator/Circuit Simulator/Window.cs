@@ -434,12 +434,18 @@ namespace Circuit_Simulator
         }
         Gate Import()
         {
+            Gate ret;
             openFileDialog.AddExtension = true;
             openFileDialog.Filter = Filter;
             openFileDialog.FileName = "";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
-                return ImportState(Read(openFileDialog.FileName));
-            return null;
+                ret = ImportState(Read(openFileDialog.FileName));
+            else
+                ret = null;
+            if (ret == null)
+                MsgBox("You can't import a circuit without inputs or outputs as a Custom Gate",
+                    "Unable To Import Custom Gate", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return ret;
         }
         #endregion
 
@@ -570,7 +576,6 @@ namespace Circuit_Simulator
                 {
                     var seperator = new ToolStripSeparator();
                     seperator.Height = 100;
-                    //seperator.ForeColor = Color.Black;
                     contextMenu_Add.DropDownItems.Add(seperator);
                     contextMenu_Type.DropDownItems.Add(new ToolStripSeparator());
                     continue;
@@ -585,6 +590,13 @@ namespace Circuit_Simulator
             {
                 if (clickedConnection != null && selected.Contains(clickedConnection.self))
                     clickedConnection = null;
+                Gate imported = null;
+                if (type == Gate.Type.Custom)
+                {
+                    imported = Import();
+                    if (imported == null)
+                        return;
+                }
                 TakeSnapshot("New Gate");
                 if (selected.Count == 0)
                 {
@@ -594,7 +606,7 @@ namespace Circuit_Simulator
                 }
                 foreach (var gate in selected)
                 {
-                    gate.ChangeTo(type, type == Gate.Type.Custom ? Import() : null);
+                    gate.ChangeTo(type, imported);
                 }
             };
         }
@@ -928,6 +940,7 @@ namespace Circuit_Simulator
                 {
                     if (!clicked.isSelected)
                     {
+                        clickedConnection = null;
                         Select(clicked);
                     }
                     else if (ModifierKeys == Keys.Control)
@@ -1019,6 +1032,7 @@ namespace Circuit_Simulator
             {
                 selecting = false;
                 var gates = GatesIn(lastClick.X, lastClick.Y, lastPos.X, lastPos.Y);
+                clickedConnection = null;
                 foreach (var gate in gates)
                     Select(gate);
             }
@@ -1370,21 +1384,22 @@ namespace Circuit_Simulator
         }
     }
 
-    public class Theme {
-        public static Color Transparent        { get { return Color.FromArgb(  0, 0x00, 0x00, 0x00); } }
-        public static Color MainColor          { get { return Color.FromArgb(255, 0x00, 0x00, 0x00); } }
-        public static Color BackColor          { get { return Color.FromArgb(255, 0xF0, 0xF0, 0xF0); } }
-        public static Color LightBackColor     { get { return Color.FromArgb( 45, 0xF0, 0xF0, 0xF0); } }
-        public static Color Red                { get { return Color.FromArgb(128, 0xE1, 0x00, 0x3A); } }
-        public static Color Glow               { get { return Color.FromArgb(192, 0xE1, 0x1A, 0x3A); } }
-        public static Color Green              { get { return Color.FromArgb(128, 0x4E, 0xFF, 0x62); } }
-        public static Color GridDark           { get { return Color.FromArgb(255, 0xC1, 0xC1, 0xC8); } }
-        public static Color GridLight          { get { return Color.FromArgb(255, 0xB4, 0xB4, 0xB8); } }
-        public static Color SelectionDim       { get { return Color.FromArgb( 32, 0x00, 0x00, 0x0F); } }
-        public static Color SelectionLight     { get { return Color.FromArgb( 64, 0x33, 0x99, 0xAA); } }
+    public class Theme
+    {
+        public static Color Transparent { get { return Color.FromArgb(0, 0x00, 0x00, 0x00); } }
+        public static Color MainColor { get { return Color.FromArgb(255, 0x00, 0x00, 0x00); } }
+        public static Color BackColor { get { return Color.FromArgb(255, 0xF0, 0xF0, 0xF0); } }
+        public static Color LightBackColor { get { return Color.FromArgb(45, 0xF0, 0xF0, 0xF0); } }
+        public static Color Red { get { return Color.FromArgb(128, 0xE1, 0x00, 0x3A); } }
+        public static Color Glow { get { return Color.FromArgb(192, 0xE1, 0x1A, 0x3A); } }
+        public static Color Green { get { return Color.FromArgb(128, 0x4E, 0xFF, 0x62); } }
+        public static Color GridDark { get { return Color.FromArgb(255, 0xC1, 0xC1, 0xC8); } }
+        public static Color GridLight { get { return Color.FromArgb(255, 0xB4, 0xB4, 0xB8); } }
+        public static Color SelectionDim { get { return Color.FromArgb(32, 0x00, 0x00, 0x0F); } }
+        public static Color SelectionLight { get { return Color.FromArgb(64, 0x33, 0x99, 0xAA); } }
         public static Color SelectionColorFill { get { return Color.FromArgb(128, 0x33, 0x99, 0xFF); } }
         public static Color SelectionColorDark { get { return Color.FromArgb(192, 0x22, 0x55, 0xFF); } }
-        public static Color ActiveCable        { get { return Color.FromArgb(255, 0xE1, 0x1A, 0x3A); } }
-        public static Color ConnectionColor    { get { return Color.FromArgb(160, 0x0D, 0x1C, 0xC4); } }
+        public static Color ActiveCable { get { return Color.FromArgb(255, 0xE1, 0x1A, 0x3A); } }
+        public static Color ConnectionColor { get { return Color.FromArgb(160, 0x0D, 0x1C, 0xC4); } }
     }
 }
