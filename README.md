@@ -1,2 +1,2 @@
-# Circuit-Simulator
+# Circuit Simulator
 Version 108
