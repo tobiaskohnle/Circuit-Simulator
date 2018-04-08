@@ -112,6 +112,18 @@ namespace Circuit_Simulator
 
             stream.AddInt(Version);
 
+            List<Gate> inputGates = GetSorted(Gate.Type.Switch);
+            List<Gate> outputGates = GetSorted(Gate.Type.Light);
+
+            stream.AddInt(inputGates.Count);
+            stream.AddInt(outputGates.Count);
+            foreach (bool val in GenerateTruthTable())
+                stream.AddBool(val);
+            foreach (Gate gate in inputGates.Concat(outputGates))
+                stream.AddString(gate.name);
+
+            stream.AddInt(77 << 8 | 77); // debugging
+
             stream.AddInt(gates.Count);
             foreach (Gate gate in gates)
             {
@@ -162,7 +174,7 @@ namespace Circuit_Simulator
             return stream;
         }
 
-        List<Gate> LoadState(List<byte> stream, bool overwrite = true)
+        List<Gate> LoadState(List<byte> stream, bool import = false, bool overwrite = true)
         {
             int i = 0;
             int version = stream.ReadInt(ref i);
@@ -171,6 +183,32 @@ namespace Circuit_Simulator
                 var gates = new List<Gate>();
                 var selected = new List<Gate>();
                 var connections = new List<Connection>();
+
+                int amtInputGates = stream.ReadInt(ref i);
+                int amtOutputGates = stream.ReadInt(ref i);
+
+                Gate imported = new Gate(0f, 0f, Gate.Type.Custom);
+
+                imported.amtInputs = amtInputGates;
+                imported.amtOutputs = amtOutputGates;
+                imported.TrimAllConnections();
+
+                imported.truthTable = new bool[(1 << amtInputGates) * amtOutputGates];
+                imported.nameList = new string[amtInputGates + amtOutputGates];
+
+                for (int a = 0; a < imported.truthTable.Length; a++)
+                    imported.truthTable[a] = stream.ReadBool(ref i);
+                for (int a = 0; a < imported.nameList.Length; a++)
+                    imported.nameList[a] = stream.ReadString(ref i);
+
+                if (import)
+                {
+                    gates.Add(imported);
+                    return gates;
+                }
+
+                if (stream.ReadInt(ref i) != (77 << 8 | 77))
+                    throw new InvalidOperationException();
 
                 int amtGates = stream.ReadInt(ref i);
                 for (int a = 0; a < amtGates; a++)
@@ -192,7 +230,7 @@ namespace Circuit_Simulator
                     gate.h = stream.ReadFloat(ref i);
                     if (gate.type == Gate.Type.Custom)
                     {
-                        gate.truthTable = new bool[(1 << gate.amtInputs) + gate.amtOutputs];
+                        gate.truthTable = new bool[(1 << gate.amtInputs) * gate.amtOutputs];
                         for (int j = 0; j < gate.truthTable.Length; j++)
                         {
                             gate.truthTable[j] = stream.ReadBool(ref i);
@@ -255,38 +293,6 @@ namespace Circuit_Simulator
                 );
                 return null;
             }
-        }
-        Gate ImportState(List<byte> bytes)
-        {
-            int i = 1;
-            int skipOverPoints = bytes.ReadInt(ref i);
-            i += 2 * 4 * skipOverPoints;
-
-            int amtInputs = bytes.ReadInt(ref i);
-            int amtOutputs = bytes.ReadInt(ref i);
-            if (amtInputs == 0 || amtOutputs == 0) return null;
-
-            Gate gate = new Gate(0, 0, Gate.Type.Custom);
-
-            gate.amtInputs = amtInputs;
-            gate.minInputs = amtInputs;
-            gate.maxInputs = amtInputs;
-            gate.amtOutputs = amtOutputs;
-
-            gate.nameList = new string[amtInputs + amtOutputs];
-            gate.truthTable = new bool[(1 << amtInputs) * amtOutputs];
-
-            for (int j = 0; j < amtInputs + amtOutputs; j++)
-            {
-                gate.nameList[j] = bytes.ReadString(ref i);
-            }
-            for (int j = 0; j < gate.truthTable.Length; j++)
-            {
-                gate.truthTable[j] = bytes.ReadBool(ref i);
-            }
-            gate.ChangeTo(Gate.Type.Custom, gate);
-
-            return gate;
         }
 
         bool[] GenerateTruthTable()
@@ -392,7 +398,7 @@ namespace Circuit_Simulator
             openFileDialog.Filter = Filter;
             openFileDialog.FileName = "";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
-                return ImportState(Read(openFileDialog.FileName));
+                return LoadState(Read(openFileDialog.FileName), true, false)?[0];
             return null;
         }
         #endregion
@@ -667,14 +673,6 @@ namespace Circuit_Simulator
                     gate.state = !gate.state;
         }
 
-        int AmtInputs()
-        {
-            return gates.Count(g => g.type == Gate.Type.Switch);
-        }
-        int AmtOutputs()
-        {
-            return gates.Count(g => g.type == Gate.Type.Light);
-        }
         List<Gate> GetSorted(Gate.Type type)
         {
             return gates.Where(g => g.type == type).OrderBy(g => g.y).ToList();
@@ -707,7 +705,7 @@ namespace Circuit_Simulator
             if (AnyCopied)
             {
                 ClearSelection();
-                var gates = LoadState((List<byte>) Clipboard.GetData(DataFormat), false);
+                var gates = LoadState((List<byte>) Clipboard.GetData(DataFormat), false, false);
                 if (gates != null)
                 {
                     RectangleF bounds = BoundsOf(gates);
