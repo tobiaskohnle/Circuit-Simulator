@@ -23,7 +23,7 @@ namespace Circuit_Simulator
         public const float PenWidth = 0.05f;
         public const float GridSize = 20f;
         public const int MaxUndoBufferSize = 32;
-        public const int Version = 108;
+        public const int Version = 109;
         #endregion
         #region Fields and Properties
         bool selecting, objectMoved;
@@ -107,181 +107,135 @@ namespace Circuit_Simulator
         }
         List<byte> GenerateState(List<Gate> gates)
         {
-            List<Connection> connectionList = new List<Connection>();
-            List<CablePoint> pointList = Points.ToList();
+            var stream = new List<byte>();
+            var connections = new List<Connection>();
 
-            foreach (var gate in gates)
-                foreach (var conn in gate.Connections)
-                    if (!conn.empty)
-                        connectionList.Add(conn);
+            stream.AddInt(Version);
 
-            List<byte> stream = new List<byte>();
-
-            stream.AddByte(Version);
-            stream.AddInt(pointList.Count);
-            foreach (var point in pointList)
+            stream.AddInt(gates.Count);
+            foreach (Gate gate in gates)
             {
-                stream.AddFloat(point.x);
-                stream.AddFloat(point.y);
-            }
-
-            stream.AddInt(AmtInputs());
-            stream.AddInt(AmtOutputs());
-
-            foreach (string name in GetSorted(Gate.Type.Switch).Select(g => g.name))
-                stream.AddString(name);
-            foreach (string name in GetSorted(Gate.Type.Light).Select(g => g.name))
-                stream.AddString(name);
-            foreach (bool bt in GenerateTruthTable())
-                stream.AddBool(bt);
-
-            foreach (var gate in gates)
-            {
+                stream.AddString(gate.name);
                 stream.AddInt((int) gate.type);
                 stream.AddBool(gate.isSelected);
-                stream.AddBool(gate.state);
+                stream.AddBool(gate.state); // maybe unnecessary
+                stream.AddBool(gate.togglestate);
+                stream.AddInt(gate.minInputs);
+                stream.AddInt(gate.maxInputs);
+                stream.AddInt(gate.amtInputs);
+                stream.AddInt(gate.amtOutputs);
                 stream.AddFloat(gate.x);
                 stream.AddFloat(gate.y);
                 stream.AddFloat(gate.w);
                 stream.AddFloat(gate.h);
-
-                stream.AddString(gate.name);
-
-                stream.AddInt(gate.amtInputs);
-                stream.AddInt(gate.amtOutputs);
-
                 if (gate.type == Gate.Type.Custom)
                 {
-                    foreach (string name in gate.nameList)
-                        stream.AddString(name);
-                    foreach (bool bt in gate.truthTable)
-                        stream.AddBool(bt);
+                    foreach (bool val in gate.truthTable)
+                        stream.AddBool(val);
+                    foreach (string val in gate.nameList)
+                        stream.AddString(val);
                 }
-
-                foreach (var conn in gate.Connections)
+                foreach (Connection conn in gate.Connections)
                 {
-                    stream.AddInt(conn.index);
+                    connections.Add(conn);
                     stream.AddBool(conn.inverted);
-                    stream.AddBool(conn.isOutput);
-                    stream.AddBool(conn.empty);
-
-                    if (!conn.empty)
+                    if (!conn.isOutput)
                     {
-                        if (!conn.isOutput)
-                            stream.AddInt(pointList.IndexOf(conn.Point));
-                        stream.AddInt(conn.OtherConnections.Count);
-                        foreach (var c in conn.OtherConnections)
-                            stream.AddInt(connectionList.IndexOf(c));
+                        if (conn.empty)
+                            stream.AddInt(0);
+                        else
+                        {
+                            stream.AddInt(1); // placeholder for multiple points
+                            stream.AddFloat(conn.point.x);
+                            stream.AddFloat(conn.point.y);
+                        }
                     }
+                    stream.AddInt(conn.OtherConnections.Count);
                 }
             }
+            stream.AddInt(77 << 8 | 77); // debugging
+            foreach (Gate gate in gates)
+                foreach (Connection conn in gate.Connections)
+                    foreach (Connection otherConn in conn.OtherConnections)
+                        stream.AddInt(connections.IndexOf(otherConn));
+            stream.AddInt(77 << 8 | 77); // debugging
             return stream;
         }
 
-        List<Gate> LoadState(List<byte> bytes, bool overwrite = true)
+        List<Gate> LoadState(List<byte> stream, bool overwrite = true)
         {
+            int i = 0;
+            int version = stream.ReadInt(ref i);
             try
             {
-                List<Gate> gates = new List<Gate>();
-                List<Gate> selected = new List<Gate>();
-                List<Connection> connectionList = new List<Connection>();
-                List<CablePoint> pointList = new List<CablePoint>();
-                List<int> refList = new List<int>();
+                var gates = new List<Gate>();
+                var selected = new List<Gate>();
+                var connections = new List<Connection>();
 
-                int i = 1;
-                int amtPoints = bytes.ReadInt(ref i);
-                for (int j = 0; j < amtPoints; j++)
+                int amtGates = stream.ReadInt(ref i);
+                for (int a = 0; a < amtGates; a++)
                 {
-                    var point = new CablePoint(bytes.ReadFloat(ref i), bytes.ReadFloat(ref i));
-                    pointList.Add(point);
-                }
-
-                int amtAllInputs = bytes.ReadInt(ref i);
-                int amtAllOutputs = bytes.ReadInt(ref i);
-                for (int j = 0; j < amtAllInputs + amtAllOutputs; j++)
-                {
-                    var skip = bytes.ReadInt(ref i); i += skip;
-                    //i += bytes.ReadInt(ref i);
-                }
-                i += (1 << amtAllInputs) * amtAllOutputs;
-
-                while (i < bytes.Count)
-                {
-                    Gate.Type type = (Gate.Type) bytes.ReadInt(ref i);
-                    Gate gate = new Gate(0, 0, type);
-                    gate.ResetAllConnections();
-                    if (bytes.ReadBool(ref i)) selected.Add(gate);
-                    gate.state = bytes.ReadBool(ref i);
-                    gate.x = bytes.ReadFloat(ref i);
-                    gate.y = bytes.ReadFloat(ref i);
-                    gate.w = bytes.ReadFloat(ref i);
-                    gate.h = bytes.ReadFloat(ref i);
-                    gate.name = bytes.ReadString(ref i);
-
-                    int amtInputs = bytes.ReadInt(ref i);
-                    int amtOutputs = bytes.ReadInt(ref i);
-
-                    if (type == Gate.Type.Custom)
-                    {
-                        gate.ChangeTo(Gate.Type.Custom, gate);
-                        gate.nameList = new string[amtInputs + amtOutputs];
-                        gate.truthTable = new bool[(1 << amtInputs) * amtOutputs];
-
-                        for (int j = 0; j < amtInputs + amtOutputs; j++)
-                        {
-                            gate.nameList[j] = bytes.ReadString(ref i);
-                        }
-                        for (int j = 0; j < (1 << amtInputs) * amtOutputs; j++)
-                        {
-                            gate.truthTable[j] = bytes.ReadBool(ref i);
-                        }
-                    }
-
-                    for (int j = 0; j < amtInputs + amtOutputs; j++)
-                    {
-                        var connection = new Connection(gate, 0, false, false);
-                        connection.index = bytes.ReadInt(ref i);
-                        connection.inverted = bytes.ReadBool(ref i);
-                        connection.isOutput = bytes.ReadBool(ref i);
-                        connection.empty = bytes.ReadBool(ref i);
-                        if (connection.isOutput)
-                        {
-                            gate.output.Add(connection);
-                            gate.amtOutputs++;
-                        }
-                        else
-                        {
-                            gate.input.Add(connection);
-                            gate.amtInputs++;
-                            if (!connection.empty)
-                                connection.Point = pointList.ElementAtOrDefault(bytes.ReadInt(ref i));
-                        }
-                        if (!connection.empty)
-                        {
-                            connectionList.Add(connection);
-                            int connectionCount = bytes.ReadInt(ref i);
-                            for (int k = 0; k < connectionCount; k++)
-                            {
-                                connection.OtherConnections.Add(null);
-                                refList.Add(bytes.ReadInt(ref i));
-                            }
-                        }
-                    }
+                    var gate = new Gate();
                     gates.Add(gate);
-                }
-
-                int relativeIndex = 0;
-                foreach (Gate gate in gates)
-                    foreach (var conn in gate.Connections)
-                        if (!conn.empty)
-                            for (int x = 0; x < conn.OtherConnections.Count; x++)
+                    gate.name = stream.ReadString(ref i);
+                    gate.type = (Gate.Type) stream.ReadInt(ref i);
+                    if (stream.ReadBool(ref i)) selected.Add(gate);
+                    gate.state = stream.ReadBool(ref i);
+                    gate.togglestate = stream.ReadBool(ref i);
+                    gate.minInputs = stream.ReadInt(ref i);
+                    gate.maxInputs = stream.ReadInt(ref i);
+                    gate.amtInputs = stream.ReadInt(ref i);
+                    gate.amtOutputs = stream.ReadInt(ref i);
+                    gate.x = stream.ReadFloat(ref i);
+                    gate.y = stream.ReadFloat(ref i);
+                    gate.w = stream.ReadFloat(ref i);
+                    gate.h = stream.ReadFloat(ref i);
+                    if (gate.type == Gate.Type.Custom)
+                    {
+                        gate.truthTable = new bool[(1 << gate.amtInputs) + gate.amtOutputs];
+                        for (int j = 0; j < gate.truthTable.Length; j++)
+                        {
+                            gate.truthTable[j] = stream.ReadBool(ref i);
+                        }
+                        gate.nameList = new string[gate.amtInputs + gate.amtOutputs];
+                        for (int j = 0; j < gate.nameList.Length; j++)
+                        {
+                            gate.nameList[j] = stream.ReadString(ref i);
+                        }
+                    }
+                    for (int j = 0; j < gate.amtInputs + gate.amtOutputs; j++)
+                    {
+                        bool output = j >= gate.amtInputs;
+                        var conn = new Connection(gate, output ? gate.amtInputs - j : j, false, output);
+                        connections.Add(conn);
+                        conn.inverted = stream.ReadBool(ref i);
+                        (output ? gate.output : gate.input).Add(conn);
+                        if (!output)
+                        {
+                            int amtPoints = stream.ReadInt(ref i);
+                            for (int k = 0; k < amtPoints; k++)
                             {
-                                var c = connectionList.ElementAtOrDefault(refList.ElementAtOrDefault(relativeIndex++));
-                                if (c == null)
-                                    conn.empty = true;
-                                else
-                                    conn.OtherConnections[x] = c;
+                                conn.point = new CablePoint(stream.ReadFloat(ref i), stream.ReadFloat(ref i));
                             }
+                        }
+                        conn.amtOtherConnections = stream.ReadInt(ref i);
+                    }
+                }
+                if (stream.ReadInt(ref i) != (77 << 8 | 77))
+                    throw new InvalidOperationException();
+                foreach (Gate gate in gates)
+                    foreach (Connection connection in gate.Connections)
+                    {
+                        for (int j = 0; j < connection.amtOtherConnections; j++)
+                        {
+                            int relIndex = stream.ReadInt(ref i);
+                            if (relIndex != -1)
+                                connection.OtherConnections.Add(connections[relIndex]);
+                        }
+                        connection.empty = connection.OtherConnections.Count == 0;
+                    }
+                if (stream.ReadInt(ref i) != (77 << 8 | 77))
+                    throw new InvalidOperationException();
 
                 if (overwrite)
                     ClearGates();
@@ -294,7 +248,7 @@ namespace Circuit_Simulator
             catch (Exception ex)
             {
                 MsgBox(
-                    (bytes[0] == Version ? ex.GetType().Name : $"Unsupported File Format ({bytes[0]})")
+                    (version == Version ? ex.GetType().Name : $"Unsupported File Format ({version})")
                         + "\r\n" + ex.StackTrace,
                     "File Parsing Failed",
                     MessageBoxButtons.OK, MessageBoxIcon.Error
@@ -434,18 +388,12 @@ namespace Circuit_Simulator
         }
         Gate Import()
         {
-            Gate ret;
             openFileDialog.AddExtension = true;
             openFileDialog.Filter = Filter;
             openFileDialog.FileName = "";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
-                ret = ImportState(Read(openFileDialog.FileName));
-            else
-                ret = null;
-            if (ret == null)
-                MsgBox("You can't import a circuit without inputs or outputs as a Custom Gate",
-                    "Unable To Import Custom Gate", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return ret;
+                return ImportState(Read(openFileDialog.FileName));
+            return null;
         }
         #endregion
 
@@ -760,12 +708,15 @@ namespace Circuit_Simulator
             {
                 ClearSelection();
                 var gates = LoadState((List<byte>) Clipboard.GetData(DataFormat), false);
-                RectangleF bounds = BoundsOf(gates);
-                foreach (var gate in gates)
+                if (gates != null)
                 {
-                    gate.Move(lastPos.X - bounds.X, lastPos.Y - bounds.Y);
-                    gate.SnapToGrid();
-                    Select(gate);
+                    RectangleF bounds = BoundsOf(gates);
+                    foreach (var gate in gates)
+                    {
+                        gate.Move(lastPos.X - bounds.X, lastPos.Y - bounds.Y);
+                        gate.SnapToGrid();
+                        Select(gate);
+                    }
                 }
             }
         }
@@ -905,10 +856,6 @@ namespace Circuit_Simulator
             if (!SavePromt()) e.Cancel = true;
         }
 
-        void pictureBox_MouseWheel(object sender, MouseEventArgs e)
-        {
-            Zoom(e.Delta > 0);
-        }
         void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
             mousedown = true;
@@ -958,15 +905,15 @@ namespace Circuit_Simulator
                 {
                     if (Gate.ValidConnection(connection, clickedConnection))
                     {
+                        TakeSnapshot("Connection Created");
                         Gate.AddConnection(connection, clickedConnection);
                         if (ModifierKeys != Keys.Control) clickedConnection = null;
-                        TakeSnapshot("Connection Created");
                     }
                     else if (Gate.ValidConnection(clickedConnection, connection))
                     {
+                        TakeSnapshot("Connection Created");
                         Gate.AddConnection(clickedConnection, connection);
                         if (ModifierKeys != Keys.Control) clickedConnection = null;
-                        TakeSnapshot("Connection Created");
                     }
                     else if (clickedConnection == connection)
                     {
@@ -1051,6 +998,10 @@ namespace Circuit_Simulator
                     foreach (var gate in selected)
                         gate.SnapToGrid();
             }
+        }
+        void pictureBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            Zoom(e.Delta > 0);
         }
         void pictureBox_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1276,11 +1227,11 @@ namespace Circuit_Simulator
         void menuStrip_Tools_Merge_Click(object sender, EventArgs e)
         {
             TakeSnapshot("Outputs Merged");
+            var point = selected[0].output[0].OtherConnection.Point;
             foreach (var gate in selected)
                 foreach (var conns in gate.output)
                     foreach (var conn in conns.OtherConnections)
                     {
-                        var point = gate.output[0].OtherConnection.Point;
                         if (point != conn.Point)
                             conn.Point = point;
                     }
@@ -1321,7 +1272,8 @@ namespace Circuit_Simulator
 
         public static int ReadInt(this List<byte> list, ref int index)
         {
-            return list.ReadByte(ref index) << 8 | list.ReadByte(ref index);
+            int val = list.ReadByte(ref index) << 8 | list.ReadByte(ref index);
+            return val == 0xFFFF ? -1 : val;
         }
         public static int ReadByte(this List<byte> list, ref int index)
         {

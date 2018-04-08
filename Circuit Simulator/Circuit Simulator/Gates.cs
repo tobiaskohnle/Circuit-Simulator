@@ -13,6 +13,7 @@ namespace Circuit_Simulator
         public Gate self;
         public int index;
         public bool empty, inverted, isOutput;
+        public int amtOtherConnections;
 
         public Connection OtherConnection
         {
@@ -55,13 +56,6 @@ namespace Circuit_Simulator
             }
         }
 
-        public bool Level
-        {
-            get {
-                return inverted != (!empty && OtherConnection.inverted != OtherConnection.self.Level(OtherConnection.index));
-            }
-        }
-
         public Connection(Gate self, int index, bool inverted, bool isOutput)
         {
             empty = true;
@@ -71,16 +65,21 @@ namespace Circuit_Simulator
             this.isOutput = isOutput;
         }
 
+        public bool Level
+        {
+            get {
+                return inverted != (!empty && OtherConnection.inverted
+                    != OtherConnection.self.Level(OtherConnection.index));
+            }
+        }
+
         public void ConnectTo(Connection connection)
         {
-            if (!isOutput && !empty)
-                Clear();
-            connection.empty = empty = false;
-            if (isOutput)
-                throw new Exception();
-            connection.OtherConnections.Clear();
+            if (connection.empty)
+                connection.OtherConnections.Clear();
             connection.OtherConnections.Add(this);
             OtherConnection = connection;
+            connection.empty = empty = false;
         }
         public void Clear()
         {
@@ -141,6 +140,9 @@ namespace Circuit_Simulator
         }
         #endregion
 
+        public Gate()
+        {
+        }
         public Gate(float x, float y, Type type, Gate custom = null)
         {
             this.x = x; this.y = y;
@@ -153,8 +155,6 @@ namespace Circuit_Simulator
             var gate = new Gate(x, y, type, this);
             gate.w = w; gate.h = h;
             gate.name = name;
-            gate.input = new List<Connection>();
-            gate.output = new List<Connection>();
             foreach (var conn in Connections)
                 (conn.isOutput ? gate.output : gate.input)
                     .Add(new Connection(gate, conn.index, conn.inverted, conn.isOutput));
@@ -509,13 +509,9 @@ namespace Circuit_Simulator
             case Type.Clock:
                 Set(2, 2, 0, 0, 1, false); break;
             case Type.Custom:
-                w = 5; h = 6;
-                minInputs = amtInputs;
-                maxInputs = amtInputs;
                 if (custom == null)
                     break;
-                TrimConnections(input, custom.amtInputs, custom.amtInputs, false);
-                TrimConnections(output, custom.amtOutputs, custom.amtOutputs, true);
+                Set(5, 6, custom.amtInputs, custom.amtInputs, custom.amtOutputs, false);
                 truthTable = custom.truthTable;
                 nameList = custom.nameList;
                 break;

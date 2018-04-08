@@ -8,3 +8,13 @@ C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Cir
 C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Release\Circuit Simulator.csproj.GenerateResource.Cache
 C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Release\Circuit Simulator.exe
 C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator 108\Circuit Simulator\obj\Release\Circuit Simulator.pdb
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\bin\Release\Circuit Simulator.exe.config
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit Simulator.exe
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit Simulator.pdb
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\bin\Release\Circuit Simulator.exe
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\bin\Release\Circuit Simulator.pdb
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit Simulator.csprojResolveAssemblyReference.cache
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit_Simulator.Popup.resources
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit_Simulator.Window.resources
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit_Simulator.Properties.Resources.resources
+C:\Users\Tobias\Desktop\All\Projects\Circuit Simulator\Circuit Simulator\Circuit Simulator\obj\Release\Circuit Simulator.csproj.GenerateResource.Cache
