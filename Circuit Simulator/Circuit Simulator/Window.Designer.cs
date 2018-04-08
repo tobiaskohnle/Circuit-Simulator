@@ -58,6 +58,9 @@
             this.menuStrip_Tools_Invert = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Merge = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Toggle = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip_About = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip_About_Version = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip_About_Github = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.contextMenu_Add = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenu_Type = new System.Windows.Forms.ToolStripMenuItem();
@@ -113,7 +116,8 @@
             this.menuStrip_File,
             this.menuStrip_Edit,
             this.menuStrip_View,
-            this.menuStrip_Tools});
+            this.menuStrip_Tools,
+            this.menuStrip_About});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(984, 24);
@@ -390,6 +394,28 @@
             this.menuStrip_Tools_Toggle.Text = "Toggle Buttons";
             this.menuStrip_Tools_Toggle.Click += new System.EventHandler(this.menuStrip_Tools_Toggle_Click);
             // 
+            // menuStrip_About
+            // 
+            this.menuStrip_About.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuStrip_About_Version,
+            this.menuStrip_About_Github});
+            this.menuStrip_About.Name = "menuStrip_About";
+            this.menuStrip_About.Size = new System.Drawing.Size(52, 20);
+            this.menuStrip_About.Text = "About";
+            // 
+            // menuStrip_About_Version
+            // 
+            this.menuStrip_About_Version.Name = "menuStrip_About_Version";
+            this.menuStrip_About_Version.Size = new System.Drawing.Size(152, 22);
+            this.menuStrip_About_Version.Text = "Version";
+            // 
+            // menuStrip_About_Github
+            // 
+            this.menuStrip_About_Github.Name = "menuStrip_About_Github";
+            this.menuStrip_About_Github.Size = new System.Drawing.Size(152, 22);
+            this.menuStrip_About_Github.Text = "Github Link";
+            this.menuStrip_About_Github.Click += new System.EventHandler(this.menuStrip_About_Github_Click);
+            // 
             // contextMenu
             // 
             this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -570,6 +596,7 @@
             this.toolStrip_ZoomOut});
             this.toolStrip.Location = new System.Drawing.Point(0, 24);
             this.toolStrip.Name = "toolStrip";
+            this.toolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.toolStrip.Size = new System.Drawing.Size(984, 25);
             this.toolStrip.TabIndex = 2;
             // 
@@ -853,6 +880,9 @@
         private System.Windows.Forms.ToolStripMenuItem menuStrip_Tools_Toggle;
         private System.Windows.Forms.ToolStripMenuItem menuStrip_Tools_RemoveConn;
         private System.Windows.Forms.ToolStripMenuItem contextMenu_RemoveConn;
+        private System.Windows.Forms.ToolStripMenuItem menuStrip_About;
+        private System.Windows.Forms.ToolStripMenuItem menuStrip_About_Version;
+        private System.Windows.Forms.ToolStripMenuItem menuStrip_About_Github;
     }
 }
 

@@ -98,6 +98,7 @@ namespace Circuit_Simulator
             ResetAll();
             UpdateButtonVisibility();
             UpdateTitle();
+            menuStrip_About_Version.Text = Title + " Version " + Version + " (Stable Build)";
         }
 
         #region IO
@@ -432,7 +433,7 @@ namespace Circuit_Simulator
         void UpdateTitle()
         {
             var fileName = filePath?.Split('\\').Last();
-            Text = Title + " - " + (fileName != null && fileName.Length > 0 ? fileName : "Untitled") + (saved ? "" : "*");
+            Text = (fileName != null && fileName.Length > 0 ? fileName : "untitled") + (saved ? "" : "*") + " - " + Title;
         }
         void UpdateButtonVisibility(Gate clicked = null)
         {
@@ -1233,6 +1234,11 @@ namespace Circuit_Simulator
                         if (point != conn.Point)
                             conn.Point = point;
                     }
+        }
+
+        void menuStrip_About_Github_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://github.com/tobiaskohnle/Circuit-Simulator");
         }
         #endregion
     }
