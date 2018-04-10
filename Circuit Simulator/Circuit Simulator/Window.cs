@@ -27,7 +27,8 @@ namespace Circuit_Simulator
         #endregion
         #region Fields and Properties
         bool selecting, objectMoved;
-        static bool msgboxActive, mousedown;
+        static bool msgboxActive;//, mousedown;
+        public static bool mousedown;
         PointF lastClick, lastPos, lastLocation;
         List<byte> clickState;
         CablePoint pointClicked;
@@ -245,7 +246,7 @@ namespace Circuit_Simulator
                     for (int j = 0; j < gate.amtInputs + gate.amtOutputs; j++)
                     {
                         bool output = j >= gate.amtInputs;
-                        var conn = new Connection(gate, output ? gate.amtInputs - j : j, false, output);
+                        var conn = new Connection(gate, output ? j - gate.amtInputs : j, false, output);
                         connections.Add(conn);
                         conn.inverted = stream.ReadBool(ref i);
                         (output ? gate.output : gate.input).Add(conn);
@@ -302,6 +303,7 @@ namespace Circuit_Simulator
             List<Gate> outputGates = GetSorted(Gate.Type.Light);
 
             bool[] stateList = gates.Select(c => c.state).ToArray();
+            bool[] toggleStateList = gates.Select(c => c.togglestate).ToArray();
 
             int p = 1 << inputGates.Count;
             bool[] table = new bool[p * outputGates.Count];
@@ -316,7 +318,10 @@ namespace Circuit_Simulator
                 }
 
             for (int i = 0; i < stateList.Length; i++)
+            {
                 gates[i].state = stateList[i];
+                gates[i].togglestate = toggleStateList[i];
+            }
 
             return table;
         }
@@ -740,6 +745,7 @@ namespace Circuit_Simulator
         }
         void DrawScreen(Graphics graphics)
         {
+            if (mousedown) { }
             ResetGates();
             DrawGrid(graphics);
             graphics.Transform = new Matrix(scale, 0, 0, scale, offsetX, offsetY);

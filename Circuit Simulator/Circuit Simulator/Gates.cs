@@ -11,7 +11,8 @@ namespace Circuit_Simulator
         public List<Connection> connections = new List<Connection>();
         public CablePoint point;
         public Gate self;
-        public int index;
+        public int _index;
+        public int index { get { return _index; } set { _index = value; }}
         public bool empty, inverted, isOutput;
         public int amtOtherConnections;
 
@@ -122,7 +123,7 @@ namespace Circuit_Simulator
         public string name;
         public Type type;
 
-        public bool isSelected, state, eval, togglestate;
+        public bool isSelected, state, togglestate, eval;
         public int minInputs, maxInputs, amtInputs, amtOutputs;
         public float x, y, w, h;
 
