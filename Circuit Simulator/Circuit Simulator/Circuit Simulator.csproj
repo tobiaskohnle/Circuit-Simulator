@@ -258,6 +258,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
+    <None Include="Resources\icons\unmerge.png" />
     <None Include="Resources\icons\shadows\zoomout.png" />
     <None Include="Resources\icons\shadows\zoomin.png" />
     <None Include="Resources\icons\shadows\undo.png" />

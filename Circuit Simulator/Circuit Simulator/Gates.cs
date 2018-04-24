@@ -11,10 +11,8 @@ namespace Circuit_Simulator
         public List<Connection> connections = new List<Connection>();
         public CablePoint point;
         public Gate self;
-        public int _index;
-        public int index { get { return _index; } set { _index = value; }}
         public bool empty, inverted, isOutput;
-        public int amtOtherConnections;
+        public int amtOtherConnections, index;
 
         public Connection OtherConnection
         {
@@ -151,24 +149,6 @@ namespace Circuit_Simulator
             ChangeTo(type, custom);
         }
 
-        public Gate Copy()
-        {
-            var gate = new Gate(x, y, type, this);
-            gate.w = w; gate.h = h;
-            gate.name = name;
-            foreach (var conn in Connections)
-                (conn.isOutput ? gate.output : gate.input)
-                    .Add(new Connection(gate, conn.index, conn.inverted, conn.isOutput));
-            gate.amtInputs = amtInputs;
-            gate.amtOutputs = amtOutputs;
-            gate.minInputs = minInputs;
-            gate.maxInputs = maxInputs;
-            gate.togglestate = togglestate;
-            gate.truthTable = truthTable?.ToArray();
-            gate.nameList = nameList?.ToArray();
-            return gate;
-        }
-
         public enum Type
         {
             Custom, Switch, Light,
@@ -176,6 +156,7 @@ namespace Circuit_Simulator
             RedGreenLight, SegmentDisplay,
             RisingEdgePulse, FallingEdgePulse, EdgePulse, Clock,
             RSFlipFlop, ClockRSFlipFlop, JKFlipFlop, DFlipFlop, TFlipFlop,
+            JKMasterSlave
         }
         public string Tag
         {
@@ -188,6 +169,17 @@ namespace Circuit_Simulator
                 case Type.Not: return "1";
                 default: return "";
                 }
+            }
+        }
+        public bool IsMutable
+        {
+            get {
+                return type == Type.And
+                    || type == Type.Or
+                    || type == Type.Xor
+                    || type == Type.Nand
+                    || type == Type.Nor
+                    || type == Type.Xnor;
             }
         }
 
@@ -292,6 +284,9 @@ namespace Circuit_Simulator
                 goto case Type.Custom;
             case Type.JKFlipFlop:
                 nameList = new[] { "1J", "C1", "1K", "Q", "!Q" };
+                goto case Type.Custom;
+            case Type.JKMasterSlave:
+                nameList = new[] { "S", "1J", "C1", "1K", "R", "Q", "!Q" };
                 goto case Type.Custom;
             case Type.DFlipFlop:
                 nameList = new[] { "1D", "C1", "Q", "!Q" };
@@ -426,7 +421,7 @@ namespace Circuit_Simulator
 
         public void TrimConnections(List<Connection> connections, int min, int max, bool isOut)
         {
-            connections.RemoveAll(conn => conn.empty && !conn.inverted);
+            connections.RemoveAll(conn => conn.self.IsMutable && conn.empty && !conn.inverted);
             for (int i = 0; i < connections.Count; i++)
                 connections[i].index = i;
             while (connections.Count > max && max != -1)
@@ -443,11 +438,8 @@ namespace Circuit_Simulator
         }
         public void TrimAllConnections()
         {
-            if (type != Type.Custom && type != Type.SegmentDisplay && type != Type.RSFlipFlop)
-            {
-                TrimConnections(input, minInputs, maxInputs, false);
-                TrimConnections(output, amtOutputs, amtOutputs, true);
-            }
+            TrimConnections(input, minInputs, maxInputs, false);
+            TrimConnections(output, amtOutputs, amtOutputs, true);
         }
         public void ResetAllConnections()
         {
@@ -503,6 +495,8 @@ namespace Circuit_Simulator
             case Type.ClockRSFlipFlop:
             case Type.JKFlipFlop:
                 Set(3, 4, 3, 3, 2, false); output[1].inverted = true; break;
+            case Type.JKMasterSlave:
+                Set(3, 5, 5, 5, 2, false); output[1].inverted = true; break;
             case Type.RisingEdgePulse:
             case Type.FallingEdgePulse:
             case Type.EdgePulse:
@@ -620,6 +614,16 @@ namespace Circuit_Simulator
                     if (levels[0] && levels[2]) state = !state;
                     else if (levels[2]) state = false;
                     else if (levels[0]) state = true;
+                }
+                return state;
+            case Type.JKMasterSlave:
+                if (levels[4]) state = false;
+                if (levels[0]) state = true;
+                if (levels[2])
+                {
+                    if (levels[1] && levels[3]) state = !state;
+                    else if (levels[3]) state = false;
+                    else if (levels[1]) state = true;
                 }
                 return state;
             case Type.RisingEdgePulse:

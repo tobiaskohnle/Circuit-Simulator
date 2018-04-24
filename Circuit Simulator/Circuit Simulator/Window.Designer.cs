@@ -57,6 +57,7 @@
             this.menuStrip_Tools_TrimInput = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Invert = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Merge = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStrip_Tools_Unmerge = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_Tools_Toggle = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_About = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip_About_Version = new System.Windows.Forms.ToolStripMenuItem();
@@ -102,6 +103,7 @@
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.contextMenu_Unmerge = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.contextMenu.SuspendLayout();
             this.toolStrip.SuspendLayout();
@@ -311,6 +313,7 @@
             this.menuStrip_Tools_TrimInput,
             this.menuStrip_Tools_Invert,
             this.menuStrip_Tools_Merge,
+            this.menuStrip_Tools_Unmerge,
             this.menuStrip_Tools_Toggle});
             this.menuStrip_Tools.Name = "menuStrip_Tools";
             this.menuStrip_Tools.Size = new System.Drawing.Size(48, 20);
@@ -319,7 +322,7 @@
             // menuStrip_Tools_Reload
             // 
             this.menuStrip_Tools_Reload.Name = "menuStrip_Tools_Reload";
-            this.menuStrip_Tools_Reload.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_Reload.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_Reload.Text = "Reload";
             this.menuStrip_Tools_Reload.Click += new System.EventHandler(this.menuStrip_Tools_Reload_Click);
             // 
@@ -328,7 +331,7 @@
             this.menuStrip_Tools_Rename.Image = global::Circuit_Simulator.Properties.Resources.rename;
             this.menuStrip_Tools_Rename.Name = "menuStrip_Tools_Rename";
             this.menuStrip_Tools_Rename.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.menuStrip_Tools_Rename.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_Rename.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_Rename.Text = "Rename";
             this.menuStrip_Tools_Rename.Click += new System.EventHandler(this.menuStrip_Tools_Rename_Click);
             // 
@@ -336,7 +339,8 @@
             // 
             this.menuStrip_Tools_Resize.Image = global::Circuit_Simulator.Properties.Resources.resize;
             this.menuStrip_Tools_Resize.Name = "menuStrip_Tools_Resize";
-            this.menuStrip_Tools_Resize.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_Resize.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
+            this.menuStrip_Tools_Resize.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_Resize.Text = "Resize";
             this.menuStrip_Tools_Resize.Click += new System.EventHandler(this.menuStrip_Tools_Resize_Click);
             // 
@@ -346,7 +350,7 @@
             this.menuStrip_Tools_AddInput.Name = "menuStrip_Tools_AddInput";
             this.menuStrip_Tools_AddInput.ShortcutKeyDisplayString = "Ctrl+,";
             this.menuStrip_Tools_AddInput.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemcomma)));
-            this.menuStrip_Tools_AddInput.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_AddInput.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_AddInput.Text = "Add Empty Input";
             this.menuStrip_Tools_AddInput.Click += new System.EventHandler(this.menuStrip_Tools_AddInput_Click);
             // 
@@ -354,7 +358,7 @@
             // 
             this.menuStrip_Tools_RemoveConn.Image = global::Circuit_Simulator.Properties.Resources.removeinput;
             this.menuStrip_Tools_RemoveConn.Name = "menuStrip_Tools_RemoveConn";
-            this.menuStrip_Tools_RemoveConn.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_RemoveConn.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_RemoveConn.Text = "Remove Connection";
             this.menuStrip_Tools_RemoveConn.Click += new System.EventHandler(this.menuStrip_Tools_RemoveConn_Click);
             // 
@@ -363,7 +367,7 @@
             this.menuStrip_Tools_TrimInput.Image = global::Circuit_Simulator.Properties.Resources.triminput;
             this.menuStrip_Tools_TrimInput.Name = "menuStrip_Tools_TrimInput";
             this.menuStrip_Tools_TrimInput.ShortcutKeyDisplayString = "";
-            this.menuStrip_Tools_TrimInput.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_TrimInput.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_TrimInput.Text = "Trim Empty Inputs";
             this.menuStrip_Tools_TrimInput.Click += new System.EventHandler(this.menuStrip_Tools_TrimInput_Click);
             // 
@@ -373,7 +377,7 @@
             this.menuStrip_Tools_Invert.Name = "menuStrip_Tools_Invert";
             this.menuStrip_Tools_Invert.ShortcutKeyDisplayString = "Ctrl+.";
             this.menuStrip_Tools_Invert.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemPeriod)));
-            this.menuStrip_Tools_Invert.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_Invert.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_Invert.Text = "Invert Connection";
             this.menuStrip_Tools_Invert.Click += new System.EventHandler(this.menuStrip_Tools_Invert_Click);
             // 
@@ -381,16 +385,29 @@
             // 
             this.menuStrip_Tools_Merge.Image = global::Circuit_Simulator.Properties.Resources.merge;
             this.menuStrip_Tools_Merge.Name = "menuStrip_Tools_Merge";
-            this.menuStrip_Tools_Merge.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_Merge.ShortcutKeyDisplayString = "Ctrl+M";
+            this.menuStrip_Tools_Merge.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.M)));
+            this.menuStrip_Tools_Merge.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_Merge.Text = "Merge Connections";
             this.menuStrip_Tools_Merge.Click += new System.EventHandler(this.menuStrip_Tools_Merge_Click);
+            // 
+            // menuStrip_Tools_Unmerge
+            // 
+            this.menuStrip_Tools_Unmerge.Image = global::Circuit_Simulator.Properties.Resources.unmerge;
+            this.menuStrip_Tools_Unmerge.Name = "menuStrip_Tools_Unmerge";
+            this.menuStrip_Tools_Unmerge.ShortcutKeyDisplayString = "Ctrl+Shift+M";
+            this.menuStrip_Tools_Unmerge.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.M)));
+            this.menuStrip_Tools_Unmerge.Size = new System.Drawing.Size(270, 22);
+            this.menuStrip_Tools_Unmerge.Text = "Unmerge Connections";
+            this.menuStrip_Tools_Unmerge.Click += new System.EventHandler(this.menuStrip_Tools_Unmerge_Click);
             // 
             // menuStrip_Tools_Toggle
             // 
             this.menuStrip_Tools_Toggle.Image = global::Circuit_Simulator.Properties.Resources.toggle;
             this.menuStrip_Tools_Toggle.Name = "menuStrip_Tools_Toggle";
             this.menuStrip_Tools_Toggle.ShortcutKeyDisplayString = "Space";
-            this.menuStrip_Tools_Toggle.Size = new System.Drawing.Size(206, 22);
+            this.menuStrip_Tools_Toggle.Size = new System.Drawing.Size(270, 22);
             this.menuStrip_Tools_Toggle.Text = "Toggle Buttons";
             this.menuStrip_Tools_Toggle.Click += new System.EventHandler(this.menuStrip_Tools_Toggle_Click);
             // 
@@ -406,13 +423,13 @@
             // menuStrip_About_Version
             // 
             this.menuStrip_About_Version.Name = "menuStrip_About_Version";
-            this.menuStrip_About_Version.Size = new System.Drawing.Size(152, 22);
+            this.menuStrip_About_Version.Size = new System.Drawing.Size(135, 22);
             this.menuStrip_About_Version.Text = "Version";
             // 
             // menuStrip_About_Github
             // 
             this.menuStrip_About_Github.Name = "menuStrip_About_Github";
-            this.menuStrip_About_Github.Size = new System.Drawing.Size(152, 22);
+            this.menuStrip_About_Github.Size = new System.Drawing.Size(135, 22);
             this.menuStrip_About_Github.Text = "Github Link";
             this.menuStrip_About_Github.Click += new System.EventHandler(this.menuStrip_About_Github_Click);
             // 
@@ -430,30 +447,31 @@
             this.contextMenu_RemoveConn,
             this.contextMenu_Trim,
             this.contextMenu_Merge,
+            this.contextMenu_Unmerge,
             this.contextMenu_Invert,
             this.contextMenu_Toggle});
             this.contextMenu.Name = "contextMenu";
-            this.contextMenu.Size = new System.Drawing.Size(183, 290);
+            this.contextMenu.Size = new System.Drawing.Size(194, 334);
             // 
             // contextMenu_Add
             // 
             this.contextMenu_Add.Image = global::Circuit_Simulator.Properties.Resources.addnew;
             this.contextMenu_Add.Name = "contextMenu_Add";
-            this.contextMenu_Add.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Add.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Add.Text = "Add Component";
             // 
             // contextMenu_Type
             // 
             this.contextMenu_Type.Image = global::Circuit_Simulator.Properties.Resources.changetype;
             this.contextMenu_Type.Name = "contextMenu_Type";
-            this.contextMenu_Type.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Type.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Type.Text = "Change Type";
             // 
             // contextMenu_Delete
             // 
             this.contextMenu_Delete.Image = global::Circuit_Simulator.Properties.Resources.delete;
             this.contextMenu_Delete.Name = "contextMenu_Delete";
-            this.contextMenu_Delete.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Delete.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Delete.Text = "Delete";
             this.contextMenu_Delete.Click += new System.EventHandler(this.menuStrip_Edit_Delete_Click);
             // 
@@ -461,7 +479,7 @@
             // 
             this.contextMenu_Copy.Image = global::Circuit_Simulator.Properties.Resources.copy;
             this.contextMenu_Copy.Name = "contextMenu_Copy";
-            this.contextMenu_Copy.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Copy.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Copy.Text = "Copy";
             this.contextMenu_Copy.Click += new System.EventHandler(this.menuStrip_Edit_Copy_Click);
             // 
@@ -469,7 +487,7 @@
             // 
             this.contextMenu_Paste.Image = global::Circuit_Simulator.Properties.Resources.paste;
             this.contextMenu_Paste.Name = "contextMenu_Paste";
-            this.contextMenu_Paste.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Paste.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Paste.Text = "Paste";
             this.contextMenu_Paste.Click += new System.EventHandler(this.menuStrip_Edit_Paste_Click);
             // 
@@ -477,7 +495,7 @@
             // 
             this.contextMenu_Rename.Image = global::Circuit_Simulator.Properties.Resources.rename;
             this.contextMenu_Rename.Name = "contextMenu_Rename";
-            this.contextMenu_Rename.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Rename.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Rename.Text = "Rename";
             this.contextMenu_Rename.Click += new System.EventHandler(this.menuStrip_Tools_Rename_Click);
             // 
@@ -485,7 +503,7 @@
             // 
             this.contextMenu_Resize.Image = global::Circuit_Simulator.Properties.Resources.resize;
             this.contextMenu_Resize.Name = "contextMenu_Resize";
-            this.contextMenu_Resize.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Resize.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Resize.Text = "Resize";
             this.contextMenu_Resize.Click += new System.EventHandler(this.menuStrip_Tools_Resize_Click);
             // 
@@ -493,7 +511,7 @@
             // 
             this.contextMenu_AddInput.Image = global::Circuit_Simulator.Properties.Resources.addinput;
             this.contextMenu_AddInput.Name = "contextMenu_AddInput";
-            this.contextMenu_AddInput.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_AddInput.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_AddInput.Text = "Add Empty Input";
             this.contextMenu_AddInput.Click += new System.EventHandler(this.menuStrip_Tools_AddInput_Click);
             // 
@@ -501,7 +519,7 @@
             // 
             this.contextMenu_RemoveConn.Image = global::Circuit_Simulator.Properties.Resources.removeinput;
             this.contextMenu_RemoveConn.Name = "contextMenu_RemoveConn";
-            this.contextMenu_RemoveConn.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_RemoveConn.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_RemoveConn.Text = "Remove Connection";
             this.contextMenu_RemoveConn.Click += new System.EventHandler(this.menuStrip_Tools_RemoveConn_Click);
             // 
@@ -509,7 +527,7 @@
             // 
             this.contextMenu_Trim.Image = global::Circuit_Simulator.Properties.Resources.triminput;
             this.contextMenu_Trim.Name = "contextMenu_Trim";
-            this.contextMenu_Trim.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Trim.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Trim.Text = "Trim Extra Inputs";
             this.contextMenu_Trim.Click += new System.EventHandler(this.menuStrip_Tools_TrimInput_Click);
             // 
@@ -517,7 +535,7 @@
             // 
             this.contextMenu_Merge.Image = global::Circuit_Simulator.Properties.Resources.merge;
             this.contextMenu_Merge.Name = "contextMenu_Merge";
-            this.contextMenu_Merge.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Merge.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Merge.Text = "Merge Connections";
             this.contextMenu_Merge.Click += new System.EventHandler(this.menuStrip_Tools_Merge_Click);
             // 
@@ -525,7 +543,7 @@
             // 
             this.contextMenu_Invert.Image = global::Circuit_Simulator.Properties.Resources.invert;
             this.contextMenu_Invert.Name = "contextMenu_Invert";
-            this.contextMenu_Invert.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Invert.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Invert.Text = "Invert Connection";
             this.contextMenu_Invert.Click += new System.EventHandler(this.menuStrip_Tools_Invert_Click);
             // 
@@ -533,7 +551,7 @@
             // 
             this.contextMenu_Toggle.Image = global::Circuit_Simulator.Properties.Resources.toggle;
             this.contextMenu_Toggle.Name = "contextMenu_Toggle";
-            this.contextMenu_Toggle.Size = new System.Drawing.Size(182, 22);
+            this.contextMenu_Toggle.Size = new System.Drawing.Size(193, 22);
             this.contextMenu_Toggle.Text = "Toggle Buttons";
             this.contextMenu_Toggle.Click += new System.EventHandler(this.menuStrip_Tools_Toggle_Click);
             // 
@@ -784,6 +802,13 @@
             this.pictureBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseUp);
             this.pictureBox.MouseWheel += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseWheel);
             // 
+            // contextMenu_Unmerge
+            // 
+            this.contextMenu_Unmerge.Image = global::Circuit_Simulator.Properties.Resources.unmerge;
+            this.contextMenu_Unmerge.Name = "contextMenu_Unmerge";
+            this.contextMenu_Unmerge.Size = new System.Drawing.Size(193, 22);
+            this.contextMenu_Unmerge.Text = "Unmerge Connections";
+            // 
             // Window
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -883,6 +908,8 @@
         private System.Windows.Forms.ToolStripMenuItem menuStrip_About;
         private System.Windows.Forms.ToolStripMenuItem menuStrip_About_Version;
         private System.Windows.Forms.ToolStripMenuItem menuStrip_About_Github;
+        private System.Windows.Forms.ToolStripMenuItem menuStrip_Tools_Unmerge;
+        private System.Windows.Forms.ToolStripMenuItem contextMenu_Unmerge;
     }
 }
 

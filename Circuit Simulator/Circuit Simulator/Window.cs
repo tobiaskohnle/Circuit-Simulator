@@ -24,6 +24,7 @@ namespace Circuit_Simulator
         public const float GridSize = 20f;
         public const int MaxUndoBufferSize = 32;
         public const int Version = 109;
+        public const int DebugFileSeperator = 77 << 8 | 77;
         #endregion
         #region Fields and Properties
         bool selecting, objectMoved;
@@ -111,6 +112,7 @@ namespace Circuit_Simulator
         {
             var stream = new List<byte>();
             var connections = new List<Connection>();
+            var points = new List<CablePoint>();
 
             stream.AddInt(Version);
 
@@ -124,8 +126,7 @@ namespace Circuit_Simulator
             foreach (Gate gate in inputGates.Concat(outputGates))
                 stream.AddString(gate.name);
 
-            stream.AddInt(77 << 8 | 77); // debugging
-
+            stream.AddInt(DebugFileSeperator);
             stream.AddInt(gates.Count);
             foreach (Gate gate in gates)
             {
@@ -164,15 +165,19 @@ namespace Circuit_Simulator
                             stream.AddFloat(conn.point.y);
                         }
                     }
-                    stream.AddInt(conn.OtherConnections.Count);
+                    if (conn.empty)
+                        stream.AddInt(0);
+                    else
+                        stream.AddInt(conn.OtherConnections.Count);
                 }
             }
-            stream.AddInt(77 << 8 | 77); // debugging
+            stream.AddInt(DebugFileSeperator);
             foreach (Gate gate in gates)
                 foreach (Connection conn in gate.Connections)
-                    foreach (Connection otherConn in conn.OtherConnections)
-                        stream.AddInt(connections.IndexOf(otherConn));
-            stream.AddInt(77 << 8 | 77); // debugging
+                    if (!conn.empty)
+                        foreach (Connection otherConn in conn.OtherConnections)
+                            stream.AddInt(connections.IndexOf(otherConn));
+            stream.AddInt(DebugFileSeperator);
             return stream;
         }
 
@@ -185,6 +190,7 @@ namespace Circuit_Simulator
                 var gates = new List<Gate>();
                 var selected = new List<Gate>();
                 var connections = new List<Connection>();
+                var points = new List<CablePoint>();
 
                 int amtInputGates = stream.ReadInt(ref i);
                 int amtOutputGates = stream.ReadInt(ref i);
@@ -209,7 +215,7 @@ namespace Circuit_Simulator
                     return gates;
                 }
 
-                if (stream.ReadInt(ref i) != (77 << 8 | 77))
+                if (stream.ReadInt(ref i) != DebugFileSeperator)
                     throw new InvalidOperationException();
 
                 int amtGates = stream.ReadInt(ref i);
@@ -261,7 +267,7 @@ namespace Circuit_Simulator
                         conn.amtOtherConnections = stream.ReadInt(ref i);
                     }
                 }
-                if (stream.ReadInt(ref i) != (77 << 8 | 77))
+                if (stream.ReadInt(ref i) != DebugFileSeperator)
                     throw new InvalidOperationException();
                 foreach (Gate gate in gates)
                     foreach (Connection connection in gate.Connections)
@@ -274,7 +280,7 @@ namespace Circuit_Simulator
                         }
                         connection.empty = connection.OtherConnections.Count == 0;
                     }
-                if (stream.ReadInt(ref i) != (77 << 8 | 77))
+                if (stream.ReadInt(ref i) != DebugFileSeperator)
                     throw new InvalidOperationException();
 
                 if (overwrite)
@@ -459,6 +465,7 @@ namespace Circuit_Simulator
             contextMenu_Delete.Visible = AnySelected || connClicked;
             contextMenu_Delete.Text = gateClicked ? "Delete" : "Clear";
             contextMenu_Merge.Visible = AnySelected;
+            contextMenu_Unmerge.Visible = AnySelected;
 
             toolStrip_Copy.Enabled = AnySelected;
             toolStrip_Delete.Enabled = AnySelected || connClicked;
@@ -526,6 +533,7 @@ namespace Circuit_Simulator
                 new { type = Gate.Type.RSFlipFlop,       str = "RS Flip Flop"               },
                 new { type = Gate.Type.ClockRSFlipFlop,  str = "RS Flip Flop (Clock Input)" },
                 new { type = Gate.Type.JKFlipFlop,       str = "JK Flip Flop"               },
+                new { type = Gate.Type.JKMasterSlave,    str = "JK Master Slave Flip Flop"  },
                 new { type = Gate.Type.DFlipFlop,        str = "D Flip Flop"                },
                 new { type = Gate.Type.TFlipFlop,        str = "T Flip Flop"                },
             };
@@ -606,7 +614,8 @@ namespace Circuit_Simulator
         {
             foreach (var gate in gates)
                 foreach (var conn in gate.input)
-                    if (!conn.empty) conn.Point.Reset();
+                    if (!conn.empty)
+                        conn.Point.Reset();
         }
 
         void Zoom(bool delta, bool centered = false)
@@ -1233,13 +1242,21 @@ namespace Circuit_Simulator
         {
             TakeSnapshot("Outputs Merged");
             var point = selected[0].output[0].OtherConnection.Point;
-            foreach (var gate in selected)
-                foreach (var conns in gate.output)
-                    foreach (var conn in conns.OtherConnections)
+            foreach (Gate gate in selected)
+                foreach (Connection conns in gate.output)
+                    foreach (Connection conn in conns.OtherConnections)
                     {
                         if (point != conn.Point)
                             conn.Point = point;
                     }
+        }
+        void menuStrip_Tools_Unmerge_Click(object sender, EventArgs e)
+        {
+            TakeSnapshot("Outputs Unmerged");
+            foreach (Gate gate in selected)
+                foreach (Connection conns in gate.output)
+                    foreach (Connection conn in conns.OtherConnections)
+                        conn.Point = new CablePoint(conn.Point.x, conn.Point.y);
         }
 
         void menuStrip_About_Github_Click(object sender, EventArgs e)

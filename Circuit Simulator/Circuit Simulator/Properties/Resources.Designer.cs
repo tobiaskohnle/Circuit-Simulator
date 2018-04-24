@@ -273,6 +273,16 @@ namespace Circuit_Simulator.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap unmerge {
+            get {
+                object obj = ResourceManager.GetObject("unmerge", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap zoomin {
             get {
                 object obj = ResourceManager.GetObject("zoomin", resourceCulture);
